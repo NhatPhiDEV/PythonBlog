@@ -1,4 +1,6 @@
+import email
 from xml.dom import ValidationErr
+from pkg_resources import require
 from rest_framework import serializers
 from account.models import User
 # Reset Password
@@ -7,6 +9,28 @@ from django.utils.http import urlsafe_base64_decode,urlsafe_base64_encode
 from django.contrib.auth.tokens import PasswordResetTokenGenerator
 
 from account.utils import Util
+
+class ParamLogin(serializers.Serializer):
+    email = serializers.EmailField(required=False)
+    password = serializers.CharField(required=False)
+
+class ParamRegister(serializers.Serializer):
+    email = serializers.EmailField(required=False)
+    first_name = serializers.CharField(required=False,max_length = 20)
+    last_name = serializers.CharField(required=False,max_length = 20)
+    password = serializers.CharField(required=False)
+    password2 = serializers.CharField(required=False)
+
+class ParamSendPasswordResetEmail(serializers.Serializer):
+    email = serializers.EmailField(required=False)
+
+class ParamChangePassword(serializers.Serializer):
+    password = serializers.CharField(required=False)
+    password2 = serializers.CharField(required=False)
+
+class ParamResetPassword(serializers.Serializer):
+    password = serializers.CharField(required=False)
+    password2 = serializers.CharField(required=False)
 
 class UserRegistrationSerializer(serializers.ModelSerializer):
     password2 = serializers.CharField(style={'input_type': 'password'}, write_only = True)
@@ -73,7 +97,7 @@ class UserSendPasswordResetEmailSerializer(serializers.ModelSerializer):
             link = 'http://127.0.0.1:8000/api/user/reset-password/'+uid+'/'+token+'/'
             print('Password reset link', link)
             #Send Email
-            body = 'Click following link to reset your password ' + link
+            body = str('Click following link to reset your password ' + link)
             data = {
                 'subject':'Reset your password',
                 'body':body,

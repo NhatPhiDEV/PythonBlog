@@ -1,13 +1,15 @@
-from multiprocessing import context
 from rest_framework.response import Response
 from rest_framework import status
 from rest_framework.views import APIView
 
-from account.serializers import UserChangePasswordSerializer, UserLoginSerializer, UserPasswordResetSerializer, UserProfileSerializer, UserRegistrationSerializer, UserSendPasswordResetEmailSerializer 
+from account.serializers import ParamChangePassword, ParamLogin, ParamRegister, ParamResetPassword, ParamSendPasswordResetEmail, UserChangePasswordSerializer, UserLoginSerializer, UserPasswordResetSerializer, UserProfileSerializer, UserRegistrationSerializer, UserSendPasswordResetEmailSerializer 
 from django.contrib.auth import authenticate  
 from account.renderers import UserRenderer
 from rest_framework_simplejwt.tokens import RefreshToken
 from rest_framework.permissions import IsAuthenticated
+from drf_yasg import openapi
+from drf_yasg.utils import swagger_auto_schema
+from rest_framework.decorators import api_view
 
 # Generate Token Manually
 def get_tokens_for_user(user):
@@ -20,21 +22,23 @@ def get_tokens_for_user(user):
 # Registration
 class UserRegistrationView(APIView):
     renderer_classes = [UserRenderer]
+    @swagger_auto_schema(request_body=ParamRegister)
     def post(self, request, format = None):
-        serializer = UserRegistrationSerializer(data=request.data)
-        serializer.is_valid(raise_exception=True)
-        user = serializer.save()
+        serializer_class = UserRegistrationSerializer(data=request.data)
+        serializer_class.is_valid(raise_exception=True)
+        user = serializer_class.save()
         token = get_tokens_for_user(user)
         return Response({'Token':token,'msg':'Registration Success'},
         status=status.HTTP_201_CREATED)      
 # Login
 class UserLoginView(APIView):
     renderer_classes = [UserRenderer]
+    @swagger_auto_schema(request_body=ParamLogin)
     def post(self,request,format= None):
-        serializer = UserLoginSerializer(data=request.data)
-        serializer.is_valid(raise_exception=True)
-        email = serializer.data.get('email')
-        password = serializer.data.get('password')
+        serializer_class = UserLoginSerializer(data=request.data)
+        serializer_class.is_valid(raise_exception=True)
+        email = serializer_class.data.get('email')
+        password = serializer_class.data.get('password')
         user = authenticate(email=email,password=password)
         if user is not None:
             token = get_tokens_for_user(user)
@@ -44,37 +48,40 @@ class UserLoginView(APIView):
             return Response({'errors':{'non_field_errors':['Email or password is not Valid']}},
             status=status.HTTP_404_NOT_FOUND)
 # Profile
-class UserProfileView(APIView):
+class UserProfileView(APIView):         
     renderer_classes = [UserRenderer]
     permission_classes = [IsAuthenticated]
     def get(self, request, format=None):
-        serializer = UserProfileSerializer(request.user)
-        return Response(serializer.data, status=status.HTTP_200_OK)
+        serializer_class = UserProfileSerializer(request.user)
+        return Response(serializer_class.data, status=status.HTTP_200_OK)
 # Change Password
 class UserChangePasswordView(APIView):
     renderer_classes = [UserRenderer]
     permission_classes = [IsAuthenticated]
+    @swagger_auto_schema(request_body=ParamChangePassword)
     def post(self, request, format=None):
-        serializer = UserChangePasswordSerializer(data = request.data
+        serializer_class = UserChangePasswordSerializer(data = request.data
         ,context={'user':request.user})
-        serializer.is_valid(raise_exception=True)
+        serializer_class.is_valid(raise_exception=True)
         return Response({'msg':'Password change Successfully'},
         status=status.HTTP_200_OK)
 # Send Password Reset Email
 class UserSendPasswordResetEmailView(APIView):
     renderer_classes = [UserRenderer]
+    @swagger_auto_schema(request_body=ParamSendPasswordResetEmail)
     def post(self,request,format=None):
-        serializer = UserSendPasswordResetEmailSerializer(data=request.data)
-        serializer.is_valid(raise_exception=True)
+        serializer_class = UserSendPasswordResetEmailSerializer(data=request.data)
+        serializer_class.is_valid(raise_exception=True)
         return Response({'msg':'Password reset link send. Please check your Email'},
         status=status.HTTP_200_OK)
 # Reset Password
 class UserPasswordResetView(APIView):
     renderer_classes = [UserRenderer]
+    @swagger_auto_schema(request_body=ParamResetPassword)
     def post(self,request,uid,token,format=None):
-        serializer = UserPasswordResetSerializer(data = request.data,
+        serializer_class = UserPasswordResetSerializer(data = request.data,
         context={'uid':uid,'token':token})
-        serializer.is_valid(raise_exception=True)
+        serializer_class.is_valid(raise_exception=True)
         return Response({'msg':'Password reset Successfully!'},
             status=status.HTTP_200_OK)
 
