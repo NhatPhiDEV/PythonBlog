@@ -19,7 +19,7 @@ class PostSearchPagination(PageNumberPagination):
     page_size = 10
 
 class PostList(generics.ListCreateAPIView):
-    # permission_classes = [permissions.IsAuthenticatedOrReadOnly]
+    permission_classes = [permissions.IsAuthenticatedOrReadOnly]
     serializer_class = PostSerializer
     pagination_class = PostSearchPagination
 
@@ -63,6 +63,7 @@ class PostDetail(viewsets.ViewSet,generics.RetrieveAPIView):
             comment = Comment.objects.create(content=content
                                     ,post = self.get_object()
                                     ,creator = request.user)
+            
             return Response(CommentSerializer(comment).data,status=status.HTTP_201_CREATED)
         return Response(status=status.HTTP_400_BAD_REQUEST)
     # Emoji

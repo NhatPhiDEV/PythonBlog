@@ -41,7 +41,7 @@ urlpatterns = [
     path('api/v1/categories/', include('category.urls')),
     path('api/v1/post/', include('post.urls')),
     path('swagger<format>.json|.yaml)', schema_view.without_ui(cache_timeout=0), name='schema-json'),
-    path('docs/', schema_view.with_ui('swagger', cache_timeout=0), name='schema-swagger-ui'),
+    path('', schema_view.with_ui('swagger', cache_timeout=0), name='schema-swagger-ui'),
     path('redoc/', schema_view.with_ui('redoc', cache_timeout=0), name='schema-redoc'),
     re_path(r'(?P<path>.*)$', serve, {'document_root': settings.MEDIA_ROOT, }),
 ]

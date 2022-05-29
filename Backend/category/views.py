@@ -18,7 +18,17 @@ class CategoryCreate(generics.CreateAPIView):
     serializer_class = CategorySerializer
 
 
-class CategoryDetail(generics.RetrieveUpdateDestroyAPIView):
+class CategoryDetail(generics.RetrieveAPIView):
+    permission_classes = [permissions.IsAuthenticatedOrReadOnly]
+    queryset = Category.objects.all()
+    serializer_class = CategorySerializer
+
+class CategoryUpdate(generics.UpdateAPIView):
+    permission_classes = [permissions.IsAuthenticatedOrReadOnly,permissions.IsAdminUser]
+    queryset = Category.objects.all()
+    serializer_class = CategorySerializer
+
+class CategoryDelete(generics.DestroyAPIView):
     permission_classes = [permissions.IsAuthenticatedOrReadOnly,permissions.IsAdminUser]
     queryset = Category.objects.all()
     serializer_class = CategorySerializer
